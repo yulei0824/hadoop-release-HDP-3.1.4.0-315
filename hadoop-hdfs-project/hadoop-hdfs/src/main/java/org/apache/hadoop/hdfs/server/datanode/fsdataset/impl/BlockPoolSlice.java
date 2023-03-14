@@ -43,6 +43,7 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.hadoop.hdfs.server.datanode.FSCachingGetSpaceUsed;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -179,10 +180,14 @@ class BlockPoolSlice {
 
     // Use cached value initially if available. Or the following call will
     // block until the initial du command completes.
-    this.dfsUsage = new CachingGetSpaceUsed.Builder().setPath(bpDir)
-                                                     .setConf(conf)
-                                                     .setInitialUsed(loadDfsUsed())
-                                                     .build();
+    this.dfsUsage = new FSCachingGetSpaceUsed.Builder().setBpid(bpid)
+            .setVolume(volume)
+            .setPath(bpDir)
+            .setConf(conf)
+            .setInitialUsed(loadDfsUsed())
+            .build();
+
+
     if (addReplicaThreadPool == null) {
       // initialize add replica fork join pool
       initializeAddReplicaPool(conf);
