@@ -611,7 +611,7 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
       response.addAllContainersToSignal(this.containersToSignal);
       this.completedContainers.removeAll(this.containersToBeRemovedFromNM);
 
-      LOG.info(String.format("hostName: {}, nodeId: {}, containersToBeRemovedFromNM: {}, completedContainers: {}.",
+      LOG.info(String.format("hostName: %s, nodeId: %s, containersToBeRemovedFromNM: %s, completedContainers: %s.",
               hostName, nodeId, this.containersToBeRemovedFromNM, completedContainers));
 
       this.containersToClean.clear();
