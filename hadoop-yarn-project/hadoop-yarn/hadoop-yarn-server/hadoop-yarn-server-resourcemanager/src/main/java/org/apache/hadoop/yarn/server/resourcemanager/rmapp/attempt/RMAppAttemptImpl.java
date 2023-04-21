@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
@@ -864,6 +865,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         NodeId nodeId = entry.getKey();
         List<ContainerStatus> finishedContainers = entry.getValue();
         if (finishedContainers.isEmpty()) {
+          LOG.info(String.format("The justFinishedContainers of %s is empty.", nodeId));
+
           continue;
         }
 
@@ -882,8 +885,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         finishedContainersSentToAM.putIfAbsent(nodeId, new ArrayList<>());
         finishedContainersSentToAM.get(nodeId).addAll(finishedContainers);
 
-        LOG.info(String.format("Add %d justFinishedContainers to finishedContainersSentToAM for %s.",
-                finishedContainers.size(), nodeId));
+        List<ContainerId> justFinishedContainerIds = finishedContainers.stream().map(s -> s.getContainerId()).collect(Collectors.toList());
+        LOG.info(String.format("Add justFinishedContainers %s to finishedContainersSentToAM for %s.",
+                justFinishedContainerIds, nodeId));
       }
       justFinishedContainers.clear();
 
@@ -1962,6 +1966,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   // may launch fail and leaves too many completed container in NM
   private void sendFinishedAMContainerToNM(NodeId nodeId,
       ContainerId containerId) {
+    LOG.info("sendFinishedAMContainerToNM");
+
     List<ContainerId> containerIdList = new ArrayList<ContainerId>();
     containerIdList.add(containerId);
     eventHandler.handle(new RMNodeFinishedContainersPulledByAMEvent(
@@ -2018,15 +2024,11 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
           new ArrayList<>());
       appAttempt.finishedContainersSentToAM.get(nodeId).add(containerStatus);
       appAttempt.sendFinishedContainersToNM();
-
-      LOG.info("sendFinishedContainersToNM");
     } else {
       LOG.info("KeepContainersAcrossApplicationAttempts: true");
 
       appAttempt.sendFinishedAMContainerToNM(nodeId,
           containerStatus.getContainerId());
-
-      LOG.info("sendFinishedAMContainerToNM");
     }
   }
 

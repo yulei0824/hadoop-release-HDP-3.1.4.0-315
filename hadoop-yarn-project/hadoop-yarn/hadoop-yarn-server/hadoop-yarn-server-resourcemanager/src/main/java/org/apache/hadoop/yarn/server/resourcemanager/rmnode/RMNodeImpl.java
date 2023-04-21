@@ -609,11 +609,11 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
       response.addContainersToBeRemovedFromNM(
           new ArrayList<ContainerId>(this.containersToBeRemovedFromNM));
       response.addAllContainersToSignal(this.containersToSignal);
-      this.completedContainers.removeAll(this.containersToBeRemovedFromNM);
 
       LOG.info(String.format("hostName: %s, nodeId: %s, containersToBeRemovedFromNM: %s, completedContainers: %s.",
               hostName, nodeId, this.containersToBeRemovedFromNM, completedContainers));
 
+      this.completedContainers.removeAll(this.containersToBeRemovedFromNM);
       this.containersToClean.clear();
       this.finishedApplications.clear();
       this.containersToSignal.clear();
