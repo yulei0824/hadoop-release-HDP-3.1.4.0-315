@@ -2055,6 +2055,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
         .getNodeId(), new ArrayList<>());
     appAttempt.justFinishedContainers.get(containerFinishedEvent
             .getNodeId()).add(containerFinishedEvent.getContainerStatus());
+
+    LOG.info(String.format("Add %s to justFinishedContainers for %s.",
+            containerFinishedEvent.getContainerStatus().getContainerId(), containerFinishedEvent.getNodeId()));
   }
 
   private static final class ContainerFinishedAtFinalStateTransition
