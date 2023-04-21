@@ -45,6 +45,7 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringInterner;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptReport;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -843,6 +844,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
   @Override
   public List<ContainerStatus> pullJustFinishedContainers() {
+    LOG.info("pullJustFinishedContainers stack trace: " + StringUtils.getStackTrace(Thread.currentThread()));
+
     this.writeLock.lock();
 
     try {
@@ -878,6 +881,9 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
         finishedContainersSentToAM.putIfAbsent(nodeId, new ArrayList<>());
         finishedContainersSentToAM.get(nodeId).addAll(finishedContainers);
+
+        LOG.info(String.format("Add %d justFinishedContainers to finishedContainersSentToAM for %s.",
+                finishedContainers.size(), nodeId));
       }
       justFinishedContainers.clear();
 
@@ -1964,6 +1970,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
   // Ack NM to remove finished containers from context.
   private void sendFinishedContainersToNM() {
+    LOG.info("sendFinishedContainersToNM");
+
     for (NodeId nodeId : finishedContainersSentToAM.keySet()) {
 
       // Clear and get current values
@@ -1976,6 +1984,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       }
       eventHandler.handle(new RMNodeFinishedContainersPulledByAMEvent(nodeId,
         containerIdList));
+
+      LOG.info(String.format("nodeId: %s, containerIds: %s", nodeId, containerIdList));
     }
     this.finishedContainersSentToAM.clear();
   }
@@ -1984,6 +1994,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
   // removed from NMContext.
   private static void amContainerFinished(RMAppAttemptImpl appAttempt,
       RMAppAttemptContainerFinishedEvent containerFinishedEvent) {
+
+    LOG.info("amContainerFinished stack trace: " + StringUtils.getStackTrace(Thread.currentThread()));
 
     NodeId nodeId = containerFinishedEvent.getNodeId();
 
@@ -2000,13 +2012,21 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
     if (!appAttempt.getSubmissionContext()
         .getKeepContainersAcrossApplicationAttempts()) {
+      LOG.info("KeepContainersAcrossApplicationAttempts: false");
+
       appAttempt.finishedContainersSentToAM.putIfAbsent(nodeId,
           new ArrayList<>());
       appAttempt.finishedContainersSentToAM.get(nodeId).add(containerStatus);
       appAttempt.sendFinishedContainersToNM();
+
+      LOG.info("sendFinishedContainersToNM");
     } else {
+      LOG.info("KeepContainersAcrossApplicationAttempts: true");
+
       appAttempt.sendFinishedAMContainerToNM(nodeId,
           containerStatus.getContainerId());
+
+      LOG.info("sendFinishedAMContainerToNM");
     }
   }
 
