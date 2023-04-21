@@ -845,11 +845,12 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
   @Override
   public List<ContainerStatus> pullJustFinishedContainers() {
-    LOG.info("pullJustFinishedContainers stack trace: " + StringUtils.getStackTrace(Thread.currentThread()));
-
     this.writeLock.lock();
 
     try {
+      LOG.info(String.format("applicationAttemptId: %s, pullJustFinishedContainers stack trace: %s",
+              applicationAttemptId, StringUtils.getStackTrace(Thread.currentThread())));
+
       List<ContainerStatus> returnList = new ArrayList<>();
 
       // A new allocate means the AM received the previously sent
