@@ -2049,6 +2049,8 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
 
   private static void addJustFinishedContainer(RMAppAttemptImpl appAttempt,
       RMAppAttemptContainerFinishedEvent containerFinishedEvent) {
+    LOG.info("addJustFinishedContainer stack trace: " + StringUtils.getStackTrace(Thread.currentThread()));
+
     appAttempt.justFinishedContainers.putIfAbsent(containerFinishedEvent
         .getNodeId(), new ArrayList<>());
     appAttempt.justFinishedContainers.get(containerFinishedEvent
