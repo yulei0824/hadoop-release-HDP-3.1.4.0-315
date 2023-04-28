@@ -1021,10 +1021,15 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
   public static class AddContainersToBeRemovedFromNMTransition implements
       SingleArcTransition<RMNodeImpl, RMNodeEvent> {
 
+    private static final Log LOG = LogFactory.getLog(AddContainersToBeRemovedFromNMTransition.class);
+
     @Override
     public void transition(RMNodeImpl rmNode, RMNodeEvent event) {
       rmNode.containersToBeRemovedFromNM.addAll(((
           RMNodeFinishedContainersPulledByAMEvent) event).getContainers());
+
+      LOG.info(String.format("Add %s to containersToBeRemovedFromNM.", ((
+              RMNodeFinishedContainersPulledByAMEvent) event).getContainers()));
     }
   }
 
